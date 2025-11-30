@@ -569,4 +569,92 @@ if __name__ == "__main__":
 >        'pinkman@yo.org', 'mr@robot.gov', 'eleven@yahoo.com']
 >        recipients = ['andrew@gmail.com', 'jessica@gmail.com', 'john@snow.is']
 
-В этом задании нам нужно
+В этом задании нам нужно написать программу, которая будет выводить електронные почты, которые будут удовлетворять множествам по условиям задачи.
+
+Вот содержимое файла `marketing.py`:
+```python
+import sys
+
+
+def get_clients_set():
+    clients = ['andrew@gmail.com', 'jessica@gmail.com', 'ted@mosby.com',
+               'john@snow.is', 'bill_gates@live.com', 'mark@facebook.com',
+               'elon@paypal.com', 'jessica@gmail.com']
+    return set(clients)
+
+
+def get_participants_set():
+    participants = ['walter@heisenberg.com', 'vasily@mail.ru',
+                    'pinkman@yo.org', 'jessica@gmail.com', 'elon@paypal.com',
+                    'pinkman@yo.org', 'mr@robot.gov', 'eleven@yahoo.com']
+    return set(participants)
+
+
+def get_recipients_set():
+    recipients = ['andrew@gmail.com', 'jessica@gmail.com', 'ted@mosby.com',
+                  'john@snow.is', 'bill_gates@live.com', 'elon@paypal.com']
+    return set(recipients)
+
+
+def call_center():
+    clients = get_clients_set()
+    recipients = get_recipients_set()
+    
+    not_contacted = clients - recipients
+    
+    return sorted(list(not_contacted))
+
+
+def potential_clients():
+    clients = get_clients_set()
+    participants = get_participants_set()
+    
+    non_clients = participants - clients
+    
+    return sorted(list(non_clients))
+
+
+def loyalty_program():
+    clients = get_clients_set()
+    participants = get_participants_set()
+    
+    non_participants = clients - participants
+    
+    return sorted(list(non_participants))
+
+
+def main():
+    if len(sys.argv) != 2:
+        raise ValueError("Usage: python marketing.py <task_name>")
+    
+    task = sys.argv[1]
+    
+    tasks = {
+        'call_center': call_center,
+        'potential_clients': potential_clients,
+        'loyalty_program': loyalty_program
+    }
+    
+    if task not in tasks:
+        raise ValueError(
+            f"Invalid task name: '{task}'. "
+            f"Valid options are: call_center, potential_clients, loyalty_program"
+        )
+    
+    result = tasks[task]()
+    
+    print(f"\n{task.upper().replace('_', ' ')}:")
+    print("-" * 50)
+    for email in result:
+        print(email)
+    print(f"\nTotal: {len(result)} email(s)")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+### Exercise 08. Работа со строками как со списками
+> 
