@@ -657,4 +657,235 @@ if __name__ == "__main__":
 ---
 
 ### Exercise 08. Работа со строками как со списками
-> 
+>- Turn-in directory: `ex08/`.
+>- Files to turn in: `names_extractor.py`, `letter_starter.py`.
+>- Allowed functions: `import sys`.
+>Imagine working in a corporation where all email accounts follow the same template: name.surname@corp.com.
+>
+>1. Create a script that uses the path to a file containing these email addresses as an argument. All emails in the file are delimited by '\n'. The script should return a table with the following fields: Name, Surname, and Email, all of which are delimited by "\t". The name and surname values should start with a capital letter. The table should be stored in the file `employees.tsv`.
+>
+>Example:
+>![1](../misc/data_science_1.png)
+>
+>2. Create another script that takes an email address, searches for the corresponding name in the file created by the first script, and returns the first paragraph of a letter:
+>
+>    _Dear Ivan, welcome to our team! We are sure that it will be a pleasure to work with you. That’s a precondition for the professionals that our company hires._
+>3. Using the structure `'la-la {0}'.format(text)` is prohibited. Please use f-strings instead. They are faster and more readable.
+
+В этом задании нам нужно сделать 2 программы. Первая программа будет принимать на вход файл со списком всех электронных почт через `\n`, а на выводе будет выдавать нам файл `employees.tsv` с именами и фамилиями, к примеру у нас есть такой `test.txt`:
+
+```txt
+ivan.petrov@corp.com
+john.smith@corp.com
+steve.jobs@corp.com
+emma.geller@corp.com
+mariya.sokolova@corp.com
+```
+и запустив команду `python3 names_extractor.py test.txt` в этой же директории мы получим файл `employees.tsv` в таком формате:
+
+```tsv
+Name	Surname	Email
+Ivan	Petrov	ivan.petrov@corp.com
+John	Smith	john.smith@corp.com
+Steve	Jobs	steve.jobs@corp.com
+Emma	Geller	emma.geller@corp.com
+Mariya	Sokolova	mariya.sokolova@corp.com
+```
+
+Вот содержимое файла `names_extractor.py`:
+
+```python
+import sys
+
+
+def extract_names_from_emails(input_file, output_file='employees.tsv'):
+    try:
+        with open(input_file, 'r') as f:
+            emails = f.read().strip().split('\n')
+        
+        with open(output_file, 'w') as f:
+            f.write("Name\tSurname\tEmail\n")
+            
+            for email in emails:
+                email = email.strip()
+                if not email or '@' not in email:
+                    continue
+                
+                name_part = email.split('@')[0]
+                
+                parts = name_part.split('.')
+                if len(parts) >= 2:
+                    name = parts[0].capitalize()
+                    surname = parts[1].capitalize()
+                    
+                    f.write(f"{name}\t{surname}\t{email}\n")
+        
+        print(f"Successfully created {output_file}")
+        
+    except FileNotFoundError:
+        print(f"Error: File '{input_file}' not found.")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python names_extractor.py <input_file>")
+        sys.exit(1)
+    
+    input_file = sys.argv[1]
+    extract_names_from_emails(input_file)
+```
+
+Вотрая программа должна брать из файла `employees.tsv` имена и фамилии сотрудников, и при вводе в аргументы запуска программы электронной почты сотрудника, выводить то что будет в его письме.
+
+Вот содержимое файла `letter_starter.py`:
+
+```python
+import sys
+
+
+def generate_welcome_letter(email, tsv_file='employees.tsv'):
+    try:
+        with open(tsv_file, 'r') as f:
+            lines = f.readlines()
+        
+        if len(lines) < 2:
+            print("Error: TSV file is empty or has no data.")
+            sys.exit(1)
+        
+        found = False
+        for line in lines[1:]:
+            parts = line.strip().split('\t')
+            if len(parts) >= 3:
+                name, surname, file_email = parts[0], parts[1], parts[2]
+                
+                if file_email.strip() == email.strip():
+                    letter = (
+                        f"Dear {name}, welcome to our team! "
+                        f"We are sure that it will be a pleasure to work with you. "
+                        f"That's a precondition for the professionals that our company hires."
+                    )
+                    print(letter)
+                    found = True
+                    break
+        
+        if not found:
+            print(f"Error: Email '{email}' not found in {tsv_file}")
+            sys.exit(1)
+            
+    except FileNotFoundError:
+        print(f"Error: File '{tsv_file}' not found.")
+        print("Please run names_extractor.py first to create the employees.tsv file.")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python letter_starter.py <email>")
+        sys.exit(1)
+    
+    email = sys.argv[1]
+    generate_welcome_letter(email)
+```
+
+---
+
+### Exercise 09. Шифр Цезаря.
+>- Turn-in directory: `ex09/`.
+>- Files to turn in: `caesar.py`.
+>- Allowed functions: `import sys`.
+>
+>There is a method called the [Caesar cipher](https://en.wikipedia.org/wiki/Caesar_cipher) that helps to encode text by shifting the alphabetical order. For example, the encoded version of "hello" might be "tqxxa" if we use a shift of 12.
+>
+>1. Write a program that will encode or decode any string using a given shift according to the argument provided:
+>
+>         $ python3 caesar.py encode 'ssh -i private.key user@school21.ru' 12
+>         eet -u bduhmfq.wqk geqd@eotaax21.dg
+>         $ python3 caesar.py decode 'eet -u bduhmfq.wqk geqd@eotaax21.dg' 12
+>         ssh -i private.key user@school21.ru
+>
+>2. If the scripts are given a string containing Cyrillic symbols, for example, the scripts should raise the exception: "The script does not support your language yet." If an incorrect number of arguments is given, raise an exception.
+
+Здесь надо написать программу, которая будет шифровать и дешифровать строки в шифр цезаря, принимая как аргументы `encode` или `decode`, потом саму строку для шифрования/дешифрования, потом шаг шифрования.
+
+Вот содержимое файла `ciaesar.py`:
+
+```python
+import sys
+
+
+def has_cyrillic(text):
+    for char in text:
+        if '\u0400' <= char <= '\u04FF':
+            return True
+    return False
+
+
+def caesar_cipher(text, shift, decode=False):
+    if decode:
+        shift = -shift
+    
+    result = []
+    
+    for char in text:
+        if char.isalpha():
+            if char.isupper():
+                base = ord('A')
+                shifted = (ord(char) - base + shift) % 26
+                result.append(chr(base + shifted))
+            else:
+                base = ord('a')
+                shifted = (ord(char) - base + shift) % 26
+                result.append(chr(base + shifted))
+        else:
+            result.append(char)
+    
+    return ''.join(result)
+
+
+def main():
+    if len(sys.argv) != 4:
+        raise AssertionError(
+            "Usage: python3 caesar.py <encode|decode> <text> <shift>"
+        )
+    
+    operation = sys.argv[1]
+    text = sys.argv[2]
+    
+    if operation not in ['encode', 'decode']:
+        raise AssertionError(
+            "Operation must be 'encode' or 'decode'"
+        )
+    
+    try:
+        shift = int(sys.argv[3])
+    except ValueError:
+        raise AssertionError("Shift must be an integer")
+    
+    if has_cyrillic(text):
+        raise AssertionError("The script does not support your language yet.")
+    
+    if operation == 'encode':
+        result = caesar_cipher(text, shift, decode=False)
+    else:
+        result = caesar_cipher(text, shift, decode=True)
+    
+    print(result)
+
+
+if __name__ == "__main__":
+    main()
+```
+---
+
+### Итоги:
+
+> Таким образом, сделав этот проект мы изучили синтаксис и семантуку Python, который нам понадобится вдальнейшем. 
+
+Удачи вам на проверках!!!
